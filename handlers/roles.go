@@ -56,7 +56,7 @@ func GetAllRoles(c *fiber.Ctx) error {
 }
 
 type CreateRoleBody struct {
-	Name string `json:"name"`
+	Name string `json:"name" bson:"name"`
 }
 
 func CreateRole(c *fiber.Ctx) error {
@@ -82,9 +82,7 @@ func CreateRole(c *fiber.Ctx) error {
 
 	coll := mongo.Database(config.CHICHASTORE_DB).Collection("roles")
 
-	role := Role{Name: body.Name}
-
-	_, err = coll.InsertOne(context.TODO(), role)
+	_, err = coll.InsertOne(context.TODO(), body)
 
 	if err != nil {
 		log.Error(err)
