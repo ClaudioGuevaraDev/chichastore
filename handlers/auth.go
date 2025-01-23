@@ -2,11 +2,16 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"time"
 
 	"github.com/ClaudioGuevaraDev/chichastore/config"
 	"github.com/ClaudioGuevaraDev/chichastore/libs"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -68,6 +73,93 @@ func SignUp(c *fiber.Ctx) error {
 	})
 }
 
+type Login struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func SignIn(c *fiber.Ctx) error {
-	return c.SendStatus(200)
+	var login Login
+
+	if err := c.BodyParser(&login); err != nil {
+		log.Error(err)
+
+		return c.Status(400).JSON(fiber.Map{
+			"error": "BODY_PARSER",
+		})
+	}
+
+	mongo, err := libs.MongoDBClient()
+
+	if err != nil {
+		log.Error(err)
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "MONGODB_CLIENT_CONNECTION",
+		})
+	}
+
+	coll := mongo.Database(config.CHICHASTORE_DB).Collection("users")
+
+	var user User
+	filter := bson.D{{Key: "email", Value: login.Email}}
+
+	if err := coll.FindOne(context.TODO(), filter).Decode(&user); err != nil {
+		log.Error(err)
+
+		return c.Status(404).JSON(fiber.Map{
+			"error": "USER_NOT_FOUND",
+		})
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(login.Password))
+	match := err == nil
+
+	if !match {
+		log.Error(err)
+
+		return c.Status(401).JSON(fiber.Map{
+			"error": "PASSWORD_NOT_MATCH",
+		})
+	}
+
+	coll = mongo.Database(config.CHICHASTORE_DB).Collection("roles")
+
+	var role Role
+	filter = bson.D{{Key: "id", Value: user.RoleID}}
+
+	if err := coll.FindOne(context.TODO(), filter).Decode(&role); err != nil {
+		log.Error(err)
+
+		return c.Status(404).JSON(fiber.Map{
+			"error": "ROLE_NOT_FOUND",
+		})
+	}
+
+	fmt.Println(role)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":        user.ID,
+		"full_name": user.FullName,
+		"email":     user.Email,
+		"phone":     user.Phone,
+		"role_id":   user.RoleID,
+		"exp":       time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+
+	tokenString, err := token.SignedString([]byte(secretKey))
+
+	if err != nil {
+		log.Error(err)
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "SIGNED_TOKEN",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"token": tokenString,
+	})
 }
