@@ -16,7 +16,7 @@ type User struct {
 	Email    string        `json:"email" bson:"email"`
 	Password string        `json:"password" bson:"password"`
 	Phone    string        `json:"phone" bson:"phone"`
-	RoleID   string        `json:"role_id" bson:"role_id"`
+	RoleID   bson.ObjectID `json:"role_id" bson:"role_id"`
 }
 
 func GetAllUsers(c *fiber.Ctx) error {

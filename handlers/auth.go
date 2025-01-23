@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -16,11 +15,11 @@ import (
 )
 
 type NewUser struct {
-	FullName string `json:"full_name" bson:"full_name"`
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
-	Phone    string `json:"phone" bson:"phone"`
-	RoleID   string `json:"role_id" bson:"role_id"`
+	FullName string        `json:"full_name" bson:"full_name"`
+	Email    string        `json:"email" bson:"email"`
+	Password string        `json:"password" bson:"password"`
+	Phone    string        `json:"phone" bson:"phone"`
+	RoleID   bson.ObjectID `json:"role_id" bson:"role_id"`
 }
 
 func SignUp(c *fiber.Ctx) error {
@@ -102,9 +101,9 @@ func SignIn(c *fiber.Ctx) error {
 	coll := mongo.Database(config.CHICHASTORE_DB).Collection("users")
 
 	var user User
-	filter := bson.D{{Key: "email", Value: login.Email}}
+	usersFilter := bson.D{{Key: "email", Value: login.Email}}
 
-	if err := coll.FindOne(context.TODO(), filter).Decode(&user); err != nil {
+	if err := coll.FindOne(context.TODO(), usersFilter).Decode(&user); err != nil {
 		log.Error(err)
 
 		return c.Status(404).JSON(fiber.Map{
@@ -126,9 +125,9 @@ func SignIn(c *fiber.Ctx) error {
 	coll = mongo.Database(config.CHICHASTORE_DB).Collection("roles")
 
 	var role Role
-	filter = bson.D{{Key: "id", Value: user.RoleID}}
+	rolesFilter := bson.M{"_id": user.RoleID}
 
-	if err := coll.FindOne(context.TODO(), filter).Decode(&role); err != nil {
+	if err := coll.FindOne(context.TODO(), rolesFilter).Decode(&role); err != nil {
 		log.Error(err)
 
 		return c.Status(404).JSON(fiber.Map{
@@ -136,14 +135,12 @@ func SignIn(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Println(role)
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        user.ID,
 		"full_name": user.FullName,
 		"email":     user.Email,
 		"phone":     user.Phone,
-		"role_id":   user.RoleID,
+		"role":      role.Name,
 		"exp":       time.Now().Add(time.Hour * 24).Unix(),
 	})
 
