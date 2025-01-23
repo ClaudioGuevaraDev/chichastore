@@ -23,6 +23,7 @@ func main() {
 	// Routes
 	routes.RolesRoutes(app)
 	routes.AuthRoutes(app)
+	routes.UsersRoutes(app)
 
 	app.Listen(":5000")
 }
