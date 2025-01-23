@@ -60,13 +60,13 @@ type CreateRoleBody struct {
 }
 
 func CreateRole(c *fiber.Ctx) error {
-	var body CreateRoleBody
+	var role CreateRoleBody
 
-	if err := c.BodyParser(&body); err != nil {
+	if err := c.BodyParser(&role); err != nil {
 		log.Error(err)
 
 		return c.Status(400).JSON(fiber.Map{
-			"error": "BODY_PARSER",
+			"error": "BODY_PARSER_ROLE",
 		})
 	}
 
@@ -82,7 +82,7 @@ func CreateRole(c *fiber.Ctx) error {
 
 	coll := mongo.Database(config.CHICHASTORE_DB).Collection("roles")
 
-	_, err = coll.InsertOne(context.TODO(), body)
+	createdRole, err := coll.InsertOne(context.TODO(), role)
 
 	if err != nil {
 		log.Error(err)
@@ -92,5 +92,7 @@ func CreateRole(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.SendStatus(201)
+	return c.Status(201).JSON(fiber.Map{
+		"role_id": createdRole.InsertedID,
+	})
 }
