@@ -4,6 +4,7 @@ import (
 	"github.com/ClaudioGuevaraDev/chichastore/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
@@ -21,6 +22,7 @@ func main() {
 	// Middlewares
 	app.Use(logger.New())
 	app.Use(helmet.New())
+	app.Use(cors.New())
 
 	// Routes
 	routes.RolesRoutes(app)
