@@ -101,9 +101,9 @@ func SignIn(c *fiber.Ctx) error {
 	coll := mongo.Database(config.CHICHASTORE_DB).Collection("users")
 
 	var user User
-	usersFilter := bson.D{{Key: "email", Value: login.Email}}
+	filter := bson.D{{Key: "email", Value: login.Email}}
 
-	if err := coll.FindOne(context.TODO(), usersFilter).Decode(&user); err != nil {
+	if err := coll.FindOne(context.TODO(), filter).Decode(&user); err != nil {
 		log.Error(err)
 
 		return c.Status(404).JSON(fiber.Map{
@@ -125,9 +125,9 @@ func SignIn(c *fiber.Ctx) error {
 	coll = mongo.Database(config.CHICHASTORE_DB).Collection("roles")
 
 	var role Role
-	rolesFilter := bson.M{"_id": user.RoleID}
+	filter = bson.D{{Key: "_id", Value: user.RoleID}}
 
-	if err := coll.FindOne(context.TODO(), rolesFilter).Decode(&role); err != nil {
+	if err := coll.FindOne(context.TODO(), filter).Decode(&role); err != nil {
 		log.Error(err)
 
 		return c.Status(404).JSON(fiber.Map{
