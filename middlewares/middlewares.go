@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +11,9 @@ import (
 )
 
 func IsAdmin(c *fiber.Ctx) error {
-	authorized := validToken(c)
+	permissions := []string{"Administrador"}
+
+	authorized := validToken(c, permissions)
 
 	if !authorized {
 		return c.SendStatus(401)
@@ -20,7 +22,7 @@ func IsAdmin(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func validToken(c *fiber.Ctx) bool {
+func validToken(c *fiber.Ctx, permissions []string) bool {
 	headers := c.GetReqHeaders()
 	authorization := headers["Authorization"]
 
@@ -58,7 +60,10 @@ func validToken(c *fiber.Ctx) bool {
 		return false
 	}
 
-	fmt.Println(claims)
+	role := claims["role"].(string)
 
-	return true
+
+	checkRole := slices.Contains(permissions, role)
+
+	return checkRole
 }
