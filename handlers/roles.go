@@ -96,3 +96,44 @@ func CreateRole(c *fiber.Ctx) error {
 		"role_id": createdRole.InsertedID,
 	})
 }
+
+func GetRoleByID(c *fiber.Ctx) error {
+	roleID := c.Params("id")
+
+	mongo, err := libs.MongoDBClient()
+
+	if err != nil {
+		log.Error(err)
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "MONGODB_CLIENT_CONNECTION",
+		})
+	}
+
+	coll := mongo.Database(config.CHICHASTORE_DB).Collection("roles")
+
+	objectID, err := bson.ObjectIDFromHex(roleID)
+
+	if err != nil {
+		log.Error(err)
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "PRIMITIVE_OBJECT_ID",
+		})
+	}
+
+	var role Role
+	filter := bson.D{{Key: "_id", Value: objectID}}
+
+	if err := coll.FindOne(context.TODO(), filter).Decode(&role); err != nil {
+		log.Error(err)
+
+		return c.Status(404).JSON(fiber.Map{
+			"error": "ROLE_NOT_FOUND",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"role": role,
+	})
+}

@@ -4,7 +4,7 @@ import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { decodeToken } from 'react-jwt';
 import { useNavigate } from 'react-router';
 
-import { UserDecodedToken } from '../../interfaces/user';
+import { UserDecodedToken } from '../../interfaces/users';
 import { authSignIn } from '../../services/auth';
 
 function Login() {

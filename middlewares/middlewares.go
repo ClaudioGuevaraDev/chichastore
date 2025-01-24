@@ -24,7 +24,7 @@ func validToken(c *fiber.Ctx) bool {
 	headers := c.GetReqHeaders()
 	authorization := headers["Authorization"]
 
-	if authorization[0] == "" {
+	if len(authorization) == 0 || authorization[0] == "" {
 		return false
 	}
 

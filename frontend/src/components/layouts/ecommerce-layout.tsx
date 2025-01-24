@@ -4,7 +4,7 @@ import EcommerceNavbar from '../navbars/ecommerce-navbar';
 
 function EcommerceLayout() {
   return (
-    <div>
+    <div className="antialiased">
       <EcommerceNavbar />
 
       <div className="w-full mx-auto max-w-screen-xl px-6 py-8">

@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import DashboardLayout from '../components/layouts/dashboard-layout';
 import EcommerceLayout from '../components/layouts/ecommerce-layout';
 import EcommerceDashboard from '../pages/dashboard/home';
+import DashboardRoles from '../pages/dashboard/roles';
+import DashboardUsers from '../pages/dashboard/users';
 import EcommerceHome from '../pages/ecommerce/home';
 import Login from '../pages/ecommerce/login';
 import Register from '../pages/ecommerce/register';
@@ -19,6 +21,8 @@ function Router() {
 
         <Route path="dashboard" element={<DashboardLayout />}>
           <Route index element={<EcommerceDashboard />} />
+          <Route path="users" element={<DashboardUsers />} />
+          <Route path="roles" element={<DashboardRoles />} />
         </Route>
       </Routes>
     </BrowserRouter>

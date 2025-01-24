@@ -10,6 +10,7 @@ func RolesRoutes(app *fiber.App) {
 	api := app.Group("/api/roles")
 
 	api.Get("/", middlewares.IsAdmin, handlers.GetAllRoles)
+	api.Get("/:id", middlewares.IsAdmin, handlers.GetRoleByID)
 
 	api.Post("/", middlewares.IsAdmin, handlers.CreateRole)
 }
