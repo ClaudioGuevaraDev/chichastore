@@ -14,31 +14,35 @@ import { getRoleByID } from '../../services/roles';
 import { getAllUsers } from '../../services/users';
 
 function DashboardUsers() {
-  const authHeader = useAuthHeader() ?? '';
+  const token = useAuthHeader() ?? '';
 
-  const { data, isLoading } = useSWR(['users'], async () => {
-    const { users } = await getAllUsers(authHeader);
+  const { data, isLoading } = useSWR(
+    ['users'],
+    async () => {
+      const { users } = await getAllUsers(token);
 
-    const parserUsers = [];
+      const parserUsers = [];
 
-    for (let i = 0; i < users.length; i++) {
-      const { role } = await getRoleByID(users[i].role_id, authHeader);
+      for (let i = 0; i < users.length; i++) {
+        const { role } = await getRoleByID(users[i].role_id, token);
 
-      parserUsers.push({
-        ...users[i],
-        role_name: role.name
-      });
-    }
+        parserUsers.push({
+          ...users[i],
+          role_name: role?.name
+        });
+      }
 
-    return { users: parserUsers };
-  });
+      return { users: parserUsers };
+    },
+    { revalidateOnFocus: false }
+  );
 
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold text-gray-900">Usuarios</h2>
 
       <div>
-        <Table aria-label="users-table">
+        <Table aria-label="users-table" className="max-w-5xl">
           <TableHeader>
             <TableColumn>NOMBRE COMPLETO</TableColumn>
             <TableColumn>CORREO ELECTRÓNICO</TableColumn>
@@ -52,7 +56,7 @@ function DashboardUsers() {
           >
             {data == null
               ? []
-              : data?.users.map((user) => (
+              : data.users.map((user) => (
                   <TableRow key={user._id}>
                     <TableCell>{user.full_name}</TableCell>
                     <TableCell>{user.email}</TableCell>

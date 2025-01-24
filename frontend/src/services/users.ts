@@ -7,7 +7,7 @@ export const getAllUsers = async (token: string) => {
       Authorization: token
     }
   });
-  const { users } = response.data as { users: User[] };
+  const { users } = response.data as { users: User[] | null };
 
-  return { users };
+  return { users: users ?? [] };
 };
